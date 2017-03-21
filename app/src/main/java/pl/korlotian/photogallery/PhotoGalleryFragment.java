@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class PhotoGalleryFragment extends Fragment {
@@ -19,6 +20,7 @@ public class PhotoGalleryFragment extends Fragment {
     private static final String TAG = "PhotoGalleryFragment";
 
     private RecyclerView mPhotoRecyclerView;
+    private List<GalleryItem> mItems = new ArrayList<>();
 
     public static PhotoGalleryFragment newInstance() {
         return new PhotoGalleryFragment();
@@ -40,14 +42,27 @@ public class PhotoGalleryFragment extends Fragment {
                 .findViewById(R.id.fragment_photo_gallery_recycler_view);
         mPhotoRecyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 3));
 
+        setupAdapter();
+
         return v;
     }
 
-    private class FetchItemsTask extends AsyncTask<Void,Void,Void> {
+    private void setupAdapter() {
+        if (isAdded()) {
+            mPhotoRecyclerView.setAdapter(new PhotoAdapter(mItems));
+        }
+    }
+
+    private class FetchItemsTask extends AsyncTask<Void,Void,List<GalleryItem>> {
         @Override
-        protected Void doInBackground(Void... params) {
+        protected List<GalleryItem> doInBackground(Void... params) {
             new FlickrFetchr().fetchItems();
-            return null;
+        }
+
+        @Override
+        protected void onPostExecute(List<GalleryItem> items) {
+            mItems = items;
+            setupAdapter();
         }
     }
 

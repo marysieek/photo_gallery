@@ -1,10 +1,14 @@
 package pl.korlotian.photogallery;
 
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.os.Message;
 import android.util.Log;
 
+import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -15,9 +19,50 @@ public class ThumbnailDownloader<T> extends HandlerThread {
     private boolean mHasQuit = false;
     private Handler mRequestHandler;
     private ConcurrentMap<T,String> mRequestMap = new ConcurrentHashMap<>();
+    private Handler mResponseHandler;
+    private ThumbnailDownloadListener<T> mThumbnailDownloadListener;
 
-    public ThumbnailDownloader() {
+    public interface ThumbnailDownloadListener<T> {
+        void onThumbnailDownloaded(T target, Bitmap thumbnail);
+    }
+
+    public void setThumbnailDownloaderListener(ThumbnailDownloadListener<T> listener) {
+        mThumbnailDownloadListener = listener;
+    }
+
+    public ThumbnailDownloader(Handler responseHandler) {
         super(TAG);
+        mRequestHandler = responseHandler;
+    }
+
+
+    @Override
+    protected void onLooperPrepared() {
+        mRequestHandler = new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                if (msg.what == MESSAGE_DOWNLOAD) {
+                    T target = (T) msg.obj;
+                    Log.i(TAG, "Got a request for URL: " + mRequestMap.get(target));
+                    handleRequest(target);
+                }
+            }
+        }
+    }
+
+    private void handleRequest(final T target) {
+        try {
+            final String url = mRequestMap.get(target);
+
+            if (url == null) { return; }
+
+            byte[] bitmapBytes = new FlickrFetchr().getUrlBytes(url);
+            final Bitmap bitmap = BitmapFactory
+                    .decodeByteArray(bitmapBytes, 0, bitmapBytes.length);
+            Log.i(TAG, "Bitmap created");
+        } catch (IOException ioe) {
+            Log.e(TAG, "Error downloading image", ioe);
+        }
     }
 
     @Override

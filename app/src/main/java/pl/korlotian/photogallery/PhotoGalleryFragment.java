@@ -109,6 +109,14 @@ public class PhotoGalleryFragment extends Fragment {
                 return false;
             }
         });
+
+        searchView.setOnSearchClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String query = QueryPreferences.getStoredQuery(getActivity());
+                searchView.setQuery(query, false);
+            }
+        });
     }
 
     @Override
@@ -124,7 +132,8 @@ public class PhotoGalleryFragment extends Fragment {
     }
 
     private void updateItems() {
-        new FetchItemsTask().execute();
+        String query = QueryPreferences.getStoredQuery(getActivity());
+        new FetchItemsTask(query).execute();
     }
 
     private void setupAdapter() {
@@ -134,14 +143,18 @@ public class PhotoGalleryFragment extends Fragment {
     }
 
     private class FetchItemsTask extends AsyncTask<Void,Void,List<GalleryItem>> {
+        private String mQuery;
+
+        public FetchItemsTask(String query) {
+            mQuery = query;
+        }
+
         @Override
         protected List<GalleryItem> doInBackground(Void... params) {
-            String query = "robot";
-
-            if (query == null) {
+            if (mQuery == null) {
                 return new FlickrFetchr().fetchRecentPhotos();
             } else {
-                return new FlickrFetchr().searchPhotos(query);
+                return new FlickrFetchr().searchPhotos(mQuery);
             }
         }
 

@@ -11,6 +11,8 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -36,6 +38,7 @@ public class PhotoGalleryFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
+        setHasOptionsMenu(true);
         new FetchItemsTask().execute();
 
         Handler responseHandler = new Handler();
@@ -81,6 +84,12 @@ public class PhotoGalleryFragment extends Fragment {
         return v;
     }
 
+    @Override
+    public void onCreateOptionsMenu (Menu menu, MenuInflater menuInflater) {
+        super.onCreateOptionsMenu(menu, menuInflater);
+        menuInflater.inflate(R.menu.fragment_photo_gallery, menu);
+    }
+
     private void setupAdapter() {
         if (isAdded()) {
             mPhotoRecyclerView.setAdapter(new PhotoAdapter(mItems));
@@ -90,7 +99,13 @@ public class PhotoGalleryFragment extends Fragment {
     private class FetchItemsTask extends AsyncTask<Void,Void,List<GalleryItem>> {
         @Override
         protected List<GalleryItem> doInBackground(Void... params) {
-            return new FlickrFetchr().fetchItems();
+            String query = "robot";
+
+            if (query == null) {
+                return new FlickrFetchr().fetchRecentPhotos();
+            } else {
+                return new FlickrFetchr().searchPhotos(query);
+            }
         }
 
         @Override

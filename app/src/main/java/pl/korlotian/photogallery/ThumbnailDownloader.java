@@ -32,9 +32,8 @@ public class ThumbnailDownloader<T> extends HandlerThread {
 
     public ThumbnailDownloader(Handler responseHandler) {
         super(TAG);
-        mRequestHandler = responseHandler;
+        mResponseHandler = responseHandler;
     }
-
 
     @Override
     protected void onLooperPrepared() {

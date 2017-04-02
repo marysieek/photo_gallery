@@ -21,7 +21,10 @@ public class PollService extends IntentService {
     private static final long POLL_INTERVAL = AlarmManager.INTERVAL_FIFTEEN_MINUTES;
 
     public static final String ACTION_SHOW_NOTIFICATION =
-            "pl.korlotian.android.photogallery.SHOW_NOTIFICATION";
+            "pl.korlotian.photogallery.SHOW_NOTIFICATION";
+
+    public static final String PERM_PRIVATE =
+            "pl.korlotian.photogallery.PRIVATE";
 
     public static Intent newIntent(Context context) {
         return new Intent(context, PollService.class);
@@ -98,7 +101,7 @@ public class PollService extends IntentService {
             NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
             notificationManager.notify(0, notification);
 
-            sendBroadcast(new Intent(ACTION_SHOW_NOTIFICATION));
+            sendBroadcast(new Intent(ACTION_SHOW_NOTIFICATION), PERM_PRIVATE);
         }
 
         QueryPreferences.setLastResultId(this, resultId);
